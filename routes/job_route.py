@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from models.job import Job
 from database.connections import SessionLocal
 from schemas.job_schema import JobCreate
+from auth.oauth2 import get_current_user,role_required
+
 
 router=APIRouter()
 
@@ -15,13 +17,15 @@ def get_db():
 
 # create job:
 @router.post("/jobs")
-def create_job(job:JobCreate,db:Session=Depends(get_db)):
+def create_job(job:JobCreate,db:Session=Depends(get_db),current_user:User=Depends(get_current_user)):
+    recrutier_olny(current_user)
     new_job=Job(
         title=job.title,
         company=job.company,
         location=job.location,
         salary=job.salary,
-        description=job.description
+        description=job.description,
+        recrutier_id=current_user.id
     )
     db.add(new_job)
     db.commit()
@@ -35,7 +39,8 @@ def get_job(db:Session=Depends(get_db)):
 
 # update job:
 @router.put("/jobs/{id}")
-def update_job(id: int, update: JobCreate, db: Session = Depends(get_db)):
+def update_job(id: int, update: JobCreate, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
+    recruiter_only(current_user)
     job_obj = db.query(Job).filter(Job.id == id).first()
     if job_obj:
         job_obj.title = update.title
@@ -63,7 +68,7 @@ def delete_job(id:int ,db:Session=Depends(get_db)):
         return "please enter the valid id no."
 
 # get data with filter :
-@router.get("/jobss")
+@router.get("/jobs")
 def filtered_data(company:str=None,location:str=None,salary:int=None,title:str=None,db:Session=Depends(get_db)):
     query=db.query(Job)
     # filter by company
@@ -85,4 +90,24 @@ def filtered_data(company:str=None,location:str=None,salary:int=None,title:str=N
     # execute query:
     jobs=query.all()
     return jobs
+
+# post data according to requiremenr
+@router.post("/jobs")
+def create_job(
+    job:JobCreate,
+    db:Session=Depends(get_db),
+    current_user:User=Depends(role_required("recruiter"))):
+    new_job=Job(
+        title=job.title,
+        company=job.company,
+        location=job.location,
+        salary=job.salary,
+        description=job.description
+    )
+    db.add(new_job)
+    db.commit()
+    db.refresh(new_job)
+
+    return new_job
+
 
