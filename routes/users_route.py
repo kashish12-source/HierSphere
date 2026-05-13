@@ -5,6 +5,8 @@ from database.connections import SessionLocal
 from schemas.users_schema import UserCreate
 from models.users import User
 
+from auth.hashing import hash_password
+
 router=APIRouter()
 
 
@@ -23,7 +25,7 @@ def create_user(user:UserCreate,db:Session=Depends(get_db)):
     new_user=User(
         username=user.username,
         email=user.email,
-        password=user.password
+        password=hash_password(user.password)
     )
     db.add(new_user)
     db.commit()
