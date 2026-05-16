@@ -22,7 +22,7 @@ def get_db():
 def sign_up(user:UserCreate,db:Session=Depends(get_db)):
     existing_user=db.query(User).filter(User.email==user.email).first()
     if existing_user:
-        return "email already registered"
+        raise HTTPException(status_code=400, detail="Email already registered")
     
     # HASH PASSWORD:
     hashed_password=hash_password(user.password)
@@ -37,7 +37,7 @@ def sign_up(user:UserCreate,db:Session=Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return "user has been signed in successfully"
+    return {"message": "User has been signed up successfully"}
 
 
 # @router.post("/login")
