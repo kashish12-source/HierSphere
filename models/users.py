@@ -12,5 +12,9 @@ class User(Base):
     applications=relationship("Application",back_populates='user')
 
     role=Column(String ,default="candidate")
+    jobs = relationship(
+    "Job",
+    back_populates="recruiter"
+)
     
     

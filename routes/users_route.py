@@ -26,7 +26,7 @@ def create_user(user:UserCreate,db:Session=Depends(get_db)):
         username=user.username,
         email=user.email,
         password=hash_password(user.password),
-        role=user.role
+        role=user.role.strip().lower() if user.role else "candidate"
     )
     db.add(new_user)
     db.commit()

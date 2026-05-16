@@ -11,5 +11,12 @@ class Job(Base):
     salary = Column(Integer)
     description = Column(String)
     applications=relationship("Application",back_populates='job')
-    recrutier_id=Column( Integer,ForeignKey("user.id"))
-    recrutier=relationship("User")
+    recruiter_id = Column(
+        Integer,
+        ForeignKey("users.id")
+    )
+
+    recruiter = relationship(
+        "User",
+        back_populates="jobs"
+    )

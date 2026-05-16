@@ -1,6 +1,7 @@
 from fastapi import APIRouter,Depends
 from sqlalchemy.orm import Session
 from models.application import Application
+from models.users import User
 from schemas.application_schema import ApplicationCreate,ApplicationStatusUpdate
 from database.connections import SessionLocal
 from auth.oauth2 import role_required
@@ -30,7 +31,7 @@ def create_application(appli:ApplicationCreate ,db:Session=Depends(get_db),curre
     return "application added successfully"
 
 #get application:
-@router.get("/applicatioins")
+@router.get("/applications")
 def get_application(db:Session=Depends(get_db)):
     return db.query(Application).all()
 

@@ -31,8 +31,8 @@ def sign_up(user:UserCreate,db:Session=Depends(get_db)):
     new_user=User(
         username=user.username,
         email=user.email,
-        password=hashed_password
-
+        password=hashed_password,
+        role=user.role.strip().lower() if user.role else "candidate"
     )
     db.add(new_user)
     db.commit()
@@ -67,7 +67,8 @@ def profile(current_user:User=Depends(get_current_user)):
     return {
         "id":current_user.id,
         "username":current_user.username,
-        "email":current_user.email
+        "email":current_user.email,
+        "role":current_user.role
     }
 @router.post("/login")
 def login(
@@ -104,8 +105,8 @@ def login(
     # CREATE TOKEN
     access_token = create_access_token(
         data={
-             "user_id": existing_user.id,
-            "email": existing_user.email,
+            "sub": existing_user.email,
+            "user_id": existing_user.id,
             "role": existing_user.role
         }
     )

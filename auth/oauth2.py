@@ -26,7 +26,6 @@ def get_current_user(
     db:Session=Depends(get_db)
 
 ):
-    credential_exception=HTTPException(status_code=401,detail="could not validate")
     try:
         # DECODE TOKEN
         payload=jwt.decode(
@@ -37,29 +36,29 @@ def get_current_user(
         # GET EMAIL
         email=payload.get("sub")
         if email is None:
-            raise credential_exception
-    except JWTError :
-        raise credential_exception
+            raise HTTPException(status_code=401, detail="Token payload invalid (no sub)")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Token validation failed: {str(e)}")
 
     # FIND USER:
     user=db.query(User).filter(User.email==email).first()
     if user is None:
-        raise credential_exception
+        raise HTTPException(status_code=401, detail="User associated with token not found")
     
     return user
 
-def recrutier_olny(current_user):
-    if current_user.role!="recrutier":
-        raise HTTPException(status_code=403,detail="only recrutiers allowed")
+def recruiter_only(current_user):
+    if not current_user.role or current_user.role.strip().lower() != "recruiter":
+        raise HTTPException(status_code=403, detail="only recruiters allowed")
     return current_user
 
 # role required:
-def role_required(required_role:str):
+def role_required(required_role: str):
     def role_checker(
-        current_user:User=Depends(get_current_user)
+        current_user: User = Depends(get_current_user)
     ):
-        if current_user.role!=required_role:
-            raise HTTPException(status_code=403 , detail="access denied")
+        if not current_user.role or current_user.role.strip().lower() != required_role.strip().lower():
+            raise HTTPException(status_code=403, detail="access denied")
         return current_user
     return role_checker
 

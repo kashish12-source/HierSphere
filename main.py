@@ -5,7 +5,9 @@ from routes.auth_route import router as auth_route
 
 
 from routes.application_route import router as app_route
-from models.users import Base
+from models.users import Base, User
+from models.job import Job
+from models.application import Application
 from database.connections import engine
 from auth.hashing import hash_password
 
